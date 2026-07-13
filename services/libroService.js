@@ -1,8 +1,7 @@
-const ModelLibro = require("../models/libromodel");
+const libroRepository = require("../repositories/libroRepository");
 const HttpError = require("../utils/HttpError");
 
-// Reglas de negocio: qué es válido, qué status corresponde a cada caso.
-// Todavía habla directo con Mongoose; el acceso a datos se aísla en el próximo paso (Repository).
+// Reglas de negocio: qué es válido, qué status corresponde a cada caso
 
 const getLibros = async ({ autor, categoria, estado } = {}) => {
   const filtros = {};
@@ -10,7 +9,7 @@ const getLibros = async ({ autor, categoria, estado } = {}) => {
   if (categoria) filtros.categoria = categoria;
   if (estado) filtros.estado = estado;
 
-  const libros = await ModelLibro.find(filtros);
+  const libros = await libroRepository.findAll(filtros);
   if (!libros.length) {
     throw new HttpError(
       404,
@@ -21,19 +20,16 @@ const getLibros = async ({ autor, categoria, estado } = {}) => {
 };
 
 const getLibroById = async (id) => {
-  const libro = await ModelLibro.findById(id);
+  const libro = await libroRepository.findById(id);
   if (!libro) throw new HttpError(404, "Libro no encontrado");
   return libro;
 };
 
-const crearLibro = (data) => ModelLibro.create(data);
+const crearLibro = (data) => libroRepository.create(data);
 
 const actualizarLibro = async (id, data) => {
   try {
-    const libro = await ModelLibro.findByIdAndUpdate(id, data, {
-      returnDocument: "after",
-      runValidators: true,
-    });
+    const libro = await libroRepository.updateById(id, data);
     if (!libro) throw new HttpError(404, "Libro no encontrado");
     return libro;
   } catch (error) {
@@ -44,13 +40,13 @@ const actualizarLibro = async (id, data) => {
 };
 
 const eliminarLibro = async (id) => {
-  const libro = await ModelLibro.findByIdAndDelete(id);
+  const libro = await libroRepository.deleteById(id);
   if (!libro) throw new HttpError(404, "Libro no encontrado");
   return libro;
 };
 
 const prestarLibro = async (id) => {
-  const libro = await ModelLibro.findById(id);
+  const libro = await libroRepository.findById(id);
   if (!libro) throw new HttpError(404, "Libro no encontrado");
   if (libro.estado === "prestado") {
     throw new HttpError(400, "El libro ya está prestado");
@@ -66,7 +62,7 @@ const prestarLibro = async (id) => {
 };
 
 const devolverLibro = async (id) => {
-  const libro = await ModelLibro.findById(id);
+  const libro = await libroRepository.findById(id);
   if (!libro) throw new HttpError(404, "Libro no encontrado");
   if (libro.estado !== "prestado") {
     throw new HttpError(
