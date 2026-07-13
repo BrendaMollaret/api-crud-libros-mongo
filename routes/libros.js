@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const ModelLibro = require("../models/libromodel"); //importar el modelo del libro
 
+//importar el middleware de autorización
+const authMiddleware = require("../middlewares/authMiddlewares");
+
 // obtener todos los libros
 // Obtener libros según filtro de búsqueda (autor, categoria, estado)
 router.get("/libros", async (req, res) => {
@@ -49,7 +52,7 @@ router.get("/libros/:id", async (req, res) => {
 });
 
 //crear un nuevo libro
-router.post("/libros", async (req, res) => {
+router.post("/libros", authMiddleware, async (req, res) => {
   const body = req.body; //Obtener los datos del libro desde el cuerpo de la solicitud
   try {
     const nuevoLibro = await ModelLibro.create(body); //Crear una nueva instancia del modelo del libro con los datos recibidos
