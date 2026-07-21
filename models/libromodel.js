@@ -6,6 +6,8 @@ const libroSchema = new mongoose.Schema(
     titulo: { type: String, required: true },
     autor: { type: String, required: true },
     categoria: { type: String, required: true },
+    isbn: { type: String, required: true, unique: true },
+    precio: { type: Number, required: true },
     estado: {
       type: String,
       enum: ["disponible", "prestado", "vencido"],
