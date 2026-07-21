@@ -22,7 +22,7 @@ const getLibroById = async (req, res, next) => {
 
 const crearLibro = async (req, res, next) => {
   try {
-    const nuevoLibro = await libroService.crearLibro(req.body);
+    const nuevoLibro = await libroService.crearLibro(req.body, req.usuario);
     res.status(201).json(nuevoLibro);
   } catch (error) {
     next(error);

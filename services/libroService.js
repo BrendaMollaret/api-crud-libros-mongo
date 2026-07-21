@@ -25,7 +25,43 @@ const getLibroById = async (id) => {
   return libro;
 };
 
-const crearLibro = (data) => libroRepository.create(data);
+// Precio base según antigüedad: cuanto más viejo, más económico
+const calcularPrecioBase = (anio) => {
+  const antiguedad = new Date().getFullYear() - anio;
+  if (antiguedad > 20) return 5000;
+  if (antiguedad > 5) return 8000;
+  return 12000;
+};
+
+// Efectos posteriores a la creación (placeholders hasta tener esos módulos)
+const registrarEnHistorial = async (libroId, usuario) => {
+  console.log(`Historial: libro ${libroId} creado por ${usuario?.email ?? "desconocido"}`);
+};
+
+const enviarNotificacionNuevoLibro = async (libro) => {
+  console.log(`Notificación: nuevo libro "${libro.titulo}" disponible`);
+};
+
+const crearLibro = async (data, usuario) => {
+  try {
+    const yaExiste = await libroRepository.existsByIsbn(data.isbn);
+    if (yaExiste) throw new HttpError(409, "El ISBN ya existe");
+
+    let precio = calcularPrecioBase(data.anio);
+    if (data.coleccion === "clasicos") precio *= 0.9;
+
+    const nuevoLibro = await libroRepository.create({ ...data, precio });
+
+    await registrarEnHistorial(nuevoLibro._id, usuario);
+    await enviarNotificacionNuevoLibro(nuevoLibro);
+
+    return nuevoLibro;
+  } catch (error) {
+    if (error instanceof HttpError) throw error;
+    // Mantiene el comportamiento previo: datos inválidos -> 400
+    throw new HttpError(400, error.message);
+  }
+};
 
 const actualizarLibro = async (id, data) => {
   try {
